@@ -1,18 +1,21 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include "DisplayTemp.hpp"
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+    
+    Display.init();
+    Serial.begin(115200);
+
+    Display.setTemp(24);
+    Display.updateDisplay();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  
+    if(Serial.available() > 0){
+        Display.setTemp(Serial.parseFloat());
+        Display.updateDisplay();
+    }
 }
