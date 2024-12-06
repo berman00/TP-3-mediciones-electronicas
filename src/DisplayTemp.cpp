@@ -21,17 +21,27 @@ void DisplayTemp::init(float min_temp, float max_temp){
 
 void DisplayTemp::setTemp(float temp){
     this->temp = temp;
+    necesario_actualizar = true;
 }
 
 void DisplayTemp::setModo(modo_t modo){
     this->modo = modo;
+    necesario_actualizar = true;
 }
 
 void DisplayTemp::toggleModo(){
     this->modo = (modo == CELSIUS) ? FAHRENHEIT : CELSIUS;
+    necesario_actualizar = true;
 }
 
 void DisplayTemp::updateDisplay(){
+
+    // esperar a q transcurra el tiempo de actualizacion
+    if(!necesario_actualizar) {
+        return; // Solo actualizar si es necesario
+    }
+
+    necesario_actualizar = false;
 
     int grosor_marco = 7;
 

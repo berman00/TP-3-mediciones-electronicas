@@ -10,8 +10,6 @@ enum modo_t {
 class DisplayTemp {
 public:
 
-
-
     DisplayTemp() : tft(TFT_eSPI()) {}
 
     void init(float min_temp = 0, float max_temp = 100);
@@ -34,6 +32,8 @@ private:
     // punto en el eje x a partir de donde se alinea el numero
     // el valor queda a la izquierda y la unidad a la derecha
     static constexpr int alineacion_x = 210;
+
+    bool necesario_actualizar = true;
 
     void dibujarNumero();
     void dibujarMarco(int grosor);
