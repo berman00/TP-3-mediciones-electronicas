@@ -23,9 +23,17 @@ void DisplayTemp::setTemp(float temp){
     this->temp = temp;
 }
 
+void DisplayTemp::setModo(modo_t modo){
+    this->modo = modo;
+}
+
+void DisplayTemp::toggleModo(){
+    this->modo = (modo == CELSIUS) ? FAHRENHEIT : CELSIUS;
+}
+
 void DisplayTemp::updateDisplay(){
 
-    int grosor_marco = 5;
+    int grosor_marco = 7;
 
     // Lleno con negro el fondo para borrar el numero
     tft.fillRect(
@@ -38,6 +46,7 @@ void DisplayTemp::updateDisplay(){
 
     dibujarMarco(grosor_marco);
     dibujarNumero();
+    dibujarUnidad();
 
 }
 
@@ -49,10 +58,6 @@ void DisplayTemp::dibujarNumero(){
 
     
     tft.setTextColor(TFT_WHITE);
-
-    // punto en el eje x a partir de donde se alinea el numero
-    // el valor queda a la izquierda y la unidad a la derecha
-    int alineacion_x = 210;
 
 
     // Numero
@@ -68,8 +73,10 @@ void DisplayTemp::dibujarNumero(){
     int posy = tft.height()/2; // Para que este centrado
 
     tft.drawString(temp_str, posx, posy);
+}
 
-
+void DisplayTemp::dibujarUnidad(){
+    
     // Unidad
     tft.setFreeFont(FUENTE_UNIDAD);
     tft.setTextDatum(BL_DATUM);
@@ -89,13 +96,22 @@ void DisplayTemp::dibujarNumero(){
     tft.fillCircle(centro_x, centro_y, radio-grosor_circ, TFT_BLACK);
 
     
-    
-
     // celcius o farenheit
     int unidad_x = centro_x + (radio * 2) - 10;
     int unidad_y = reglon_y + 9; // bajo un poco la letra para que este sobre el reglon
-    tft.drawString("C", unidad_x, unidad_y);
 
+    char unidad_str[2];
+
+    switch(modo){
+    case CELSIUS:
+        sprintf(unidad_str, "C"); 
+        break;
+    case FAHRENHEIT:
+        sprintf(unidad_str, "F"); 
+        break;
+    }
+
+    tft.drawString(unidad_str, unidad_x, unidad_y);
 }
 
 void DisplayTemp::dibujarMarco(int grosor){

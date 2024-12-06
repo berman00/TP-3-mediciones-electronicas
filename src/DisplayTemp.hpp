@@ -1,15 +1,16 @@
 #pragma once
 
 #include "TFT_eSPI.h"
-
+    
+enum modo_t {
+    CELSIUS,
+    FAHRENHEIT
+};
 
 class DisplayTemp {
 public:
 
-    enum modo_t {
-        CELSIUS,
-        FAHRENHEIT
-    };
+
 
     DisplayTemp() : tft(TFT_eSPI()) {}
 
@@ -18,6 +19,7 @@ public:
     void setTemp(float temp);
     void updateDisplay();
     void setModo(modo_t modo);
+    void toggleModo();
 
 private:
 
@@ -29,8 +31,13 @@ private:
 
     modo_t modo = CELSIUS;
 
+    // punto en el eje x a partir de donde se alinea el numero
+    // el valor queda a la izquierda y la unidad a la derecha
+    static constexpr int alineacion_x = 210;
+
     void dibujarNumero();
     void dibujarMarco(int grosor);
+    void dibujarUnidad();
 
 };
 
