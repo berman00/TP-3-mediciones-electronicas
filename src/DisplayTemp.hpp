@@ -29,6 +29,9 @@ private:
     modo_t modo = CELSIUS;
     bool boton = false;
 
+    void dibujarNumero();
+    void dibujarGradiente();
+
 };
 
 extern DisplayTemp Display;
