@@ -6,12 +6,18 @@
 class DisplayTemp {
 public:
 
+    enum modo_t {
+        CELSIUS,
+        FAHRENHEIT
+    };
+
     DisplayTemp() : tft(TFT_eSPI()) {}
 
-    void init(float min_temp = 0, float max_temp = 100, bool boton = false);
+    void init(float min_temp = 0, float max_temp = 100);
 
     void setTemp(float temp);
     void updateDisplay();
+    void setModo(modo_t modo);
 
 private:
 
@@ -21,13 +27,7 @@ private:
     float max_temp;
     float min_temp;
 
-    enum modo_t {
-        CELSIUS,
-        FAHRENHEIT
-    };
-
     modo_t modo = CELSIUS;
-    bool boton = false;
 
     void dibujarNumero();
     void dibujarGradiente();

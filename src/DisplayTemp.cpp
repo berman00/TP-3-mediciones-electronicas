@@ -8,7 +8,7 @@
 uint16_t interpolarColor(uint16_t color1, uint16_t color2, float porcentaje);
 
 
-void DisplayTemp::init(float min_temp, float max_temp, bool boton){
+void DisplayTemp::init(float min_temp, float max_temp){
 
     tft.init();
     tft.setRotation(1);
@@ -17,12 +17,6 @@ void DisplayTemp::init(float min_temp, float max_temp, bool boton){
 
     this->min_temp = min_temp;
     this->max_temp = max_temp;
-    this->boton = boton;
-
-    // Si selecciona boton se pueden cambiar de celcius a farenheit usando el boton
-    if (boton){
-        pinMode(BUTTON_2, INPUT);
-    }
 }
 
 void DisplayTemp::setTemp(float temp){
