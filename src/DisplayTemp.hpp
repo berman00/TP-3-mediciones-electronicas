@@ -30,7 +30,7 @@ private:
     modo_t modo = CELSIUS;
 
     void dibujarNumero();
-    void dibujarGradiente();
+    void dibujarMarco(int grosor);
 
 };
 

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 
+
 uint16_t interpolarColor(uint16_t color1, uint16_t color2, float porcentaje);
 
 
@@ -13,8 +14,7 @@ void DisplayTemp::init(float min_temp, float max_temp){
     tft.init();
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
-    tft.setTextDatum(MR_DATUM); // Mido desde el medio a la derecha para alinear el texto a la derecha100
-
+    
     this->min_temp = min_temp;
     this->max_temp = max_temp;
 }
@@ -25,41 +25,87 @@ void DisplayTemp::setTemp(float temp){
 
 void DisplayTemp::updateDisplay(){
 
-    
-    dibujarGradiente();
+    int grosor_marco = 5;
+
+    // Lleno con negro el fondo para borrar el numero
+    tft.fillRect(
+        grosor_marco,              // x pos
+        grosor_marco,              // y pos
+        tft.width() - grosor_marco * 2,   // ancho
+        tft.height() - grosor_marco * 2,  // alto
+        TFT_BLACK
+    );
+
+    dibujarMarco(grosor_marco);
     dibujarNumero();
 
 }
 
+#define FUENTE_NUM 7
+#define FUENTE_UNIDAD &FreeSans24pt7b
+
 void DisplayTemp::dibujarNumero(){
-        tft.setTextColor(TFT_WHITE);
+
+
+    
+    tft.setTextColor(TFT_WHITE);
+
+    // punto en el eje x a partir de donde se alinea el numero
+    // el valor queda a la izquierda y la unidad a la derecha
+    int alineacion_x = 210;
+
+
+    // Numero
+
+    tft.setTextFont(FUENTE_NUM); // Digitos 7 segmentos
+    tft.setTextDatum(MR_DATUM); // Mido desde el medio a la derecha para alinear el texto a la derecha100
 
     // Formateo string con valor para mejor visualización
     char  temp_str[6];
-
     sprintf(temp_str, "%6.2f", temp);
 
-    int font = 7;
-    int posx = 200;
+    int posx = alineacion_x;
     int posy = tft.height()/2; // Para que este centrado
 
-    tft.drawString(
-        temp_str,
-        posx,
-        posy,
-        font
-    );
+    tft.drawString(temp_str, posx, posy);
+
+
+    // Unidad
+    tft.setFreeFont(FUENTE_UNIDAD);
+    tft.setTextDatum(BL_DATUM);
+
+    // posicion del reglo
+    int reglon_y = (tft.height() + tft.fontHeight(FUENTE_NUM)) / 2;
+
+
+    // Circulo de grados
+    // no esta incluido en las tipografias
+    int radio = 7;
+    int grosor_circ = 3;
+    int centro_x = alineacion_x + radio + 5;
+    int centro_y = reglon_y - tft.fontHeight() + radio * 2;
+
+    tft.fillCircle(centro_x, centro_y, radio, 0xFFFFFF); // No se porque pero esta funcion usa RGB de 24 bits en vez de 16;
+    tft.fillCircle(centro_x, centro_y, radio-grosor_circ, TFT_BLACK);
+
+    
+    
+
+    // celcius o farenheit
+    int unidad_x = centro_x + (radio * 2) - 10;
+    int unidad_y = reglon_y + 9; // bajo un poco la letra para que este sobre el reglon
+    tft.drawString("C", unidad_x, unidad_y);
+
 }
 
-void DisplayTemp::dibujarGradiente(){
+void DisplayTemp::dibujarMarco(int grosor){
 
     // Color entre azul y rojo que varia segun temp
     uint16_t color_temp = interpolarColor(
         TFT_BLUE, TFT_RED, ((temp - min_temp) / (max_temp - min_temp)));
     
-    // Rectangulo alrrededor de la patalla con el color de la temperatura
-    uint16_t grosor_marco = 5;
-    for (int i = 0; i < grosor_marco; i++){
+
+    for (int i = 0; i < grosor; i++){
         tft.drawRect(
             i,              // x pos
             i,              // y pos
@@ -68,35 +114,6 @@ void DisplayTemp::dibujarGradiente(){
             color_temp
         );
     }
-
-    // Gradiente entre marco y fondo negro
-    uint16_t grosor_gradiente = 20;
-    for (int i = 0; i < grosor_gradiente; i++){
-        uint16_t color_gradiente = interpolarColor(
-            color_temp, TFT_BLACK, ((float)(i) / (float)(grosor_gradiente))
-        );
-
-        int j = grosor_marco + i;
-
-        tft.drawRect(
-            j,              // x pos
-            j,              // y pos
-            tft.width() - j * 2,   // ancho
-            tft.height() - j * 2,  // alto
-            color_gradiente
-        );
-    }
-
-    uint16_t grosor_borde = grosor_marco + grosor_gradiente;
-
-    // Lleno con negro el fondo para borrar el numero
-    tft.fillRect(
-        grosor_borde,              // x pos
-        grosor_borde,              // y pos
-        tft.width() - grosor_borde * 2,   // ancho
-        tft.height() - grosor_borde * 2,  // alto
-        TFT_BLACK
-    );
 }
 
 
