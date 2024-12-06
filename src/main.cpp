@@ -17,5 +17,6 @@ void loop() {
     if(Serial.available() > 0){
         Display.setTemp(Serial.parseFloat());
         Display.updateDisplay();
+        Serial.flush();
     }
 }
