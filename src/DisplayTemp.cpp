@@ -3,6 +3,7 @@
 #include "Arduino.h"
 #include "Wire.h"
 #include <stdint.h>
+#include <math.h>
 
 uint16_t interpolarColor(uint16_t color1, uint16_t color2, float porcentaje);
 
@@ -57,16 +58,51 @@ void DisplayTemp::dibujarNumero(){
 }
 
 void DisplayTemp::dibujarGradiente(){
+
+    // Color entre azul y rojo que varia segun temp
+    uint16_t color_temp = interpolarColor(
+        TFT_BLUE, TFT_RED, ((temp - min_temp) / (max_temp - min_temp)));
     
-    for(int i = 0; i < tft.width(); i++){
-        
-        tft.drawFastVLine(
+    // Rectangulo alrrededor de la patalla con el color de la temperatura
+    uint16_t grosor_marco = 5;
+    for (int i = 0; i < grosor_marco; i++){
+        tft.drawRect(
             i,              // x pos
-            0,              // y pos inicial
-            tft.height(),   // y pos final
-            interpolarColor(TFT_BLUE, TFT_RED, ((float)i)/((float)tft.width()))
+            i,              // y pos
+            tft.width() - i * 2,   // ancho
+            tft.height() - i * 2,  // alto
+            color_temp
         );
     }
+
+    // Gradiente entre marco y fondo negro
+    uint16_t grosor_gradiente = 20;
+    for (int i = 0; i < grosor_gradiente; i++){
+        uint16_t color_gradiente = interpolarColor(
+            color_temp, TFT_BLACK, ((float)(i) / (float)(grosor_gradiente))
+        );
+
+        int j = grosor_marco + i;
+
+        tft.drawRect(
+            j,              // x pos
+            j,              // y pos
+            tft.width() - j * 2,   // ancho
+            tft.height() - j * 2,  // alto
+            color_gradiente
+        );
+    }
+
+    uint16_t grosor_borde = grosor_marco + grosor_gradiente;
+
+    // Lleno con negro el fondo para borrar el numero
+    tft.fillRect(
+        grosor_borde,              // x pos
+        grosor_borde,              // y pos
+        tft.width() - grosor_borde * 2,   // ancho
+        tft.height() - grosor_borde * 2,  // alto
+        TFT_BLACK
+    );
 }
 
 
