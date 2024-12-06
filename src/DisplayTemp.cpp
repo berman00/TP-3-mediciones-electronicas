@@ -57,6 +57,7 @@ void DisplayTemp::updateDisplay(){
     dibujarMarco(grosor_marco);
     dibujarNumero();
     dibujarUnidad();
+    dibujarTitulo(grosor_marco);
 
 }
 
@@ -157,6 +158,20 @@ void DisplayTemp::dibujarMarco(int grosor){
             color_temp
         );
     }
+}
+
+void DisplayTemp::dibujarTitulo(int grosor_marco){
+    
+    tft.setTextFont(2);
+    tft.setTextDatum(BR_DATUM);
+    tft.setTextColor(TFT_ORANGE);
+
+    int dist_esquina = grosor_marco + 3;
+
+    int posx = tft.width() - dist_esquina;
+    int posy = tft.height() - dist_esquina;
+
+    tft.drawString("TP3 MEDICIONES - Bellini | Berman | Saitta", posx, posy);
 }
 
 

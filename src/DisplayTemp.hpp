@@ -38,6 +38,7 @@ private:
     void dibujarNumero();
     void dibujarMarco(int grosor);
     void dibujarUnidad();
+    void dibujarTitulo(int grosor_marco);
 
 };
 
