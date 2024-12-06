@@ -56,9 +56,25 @@ void DisplayTemp::updateDisplay(){
 void DisplayTemp::dibujarNumero(){
 
 
-    
-    tft.setTextColor(TFT_WHITE);
+    // Manejo de valores fuera del rango
+    float temp_mostrada;
+    if (temp>max_temp){
+        temp_mostrada = max_temp;
+        tft.setTextColor(TFT_RED);
+    }
+    else if (temp<min_temp){
+        temp_mostrada = min_temp;
+        tft.setTextColor(TFT_RED);
+    }
+    else{
+        temp_mostrada = temp;
+        tft.setTextColor(TFT_WHITE);
+    }
 
+    // Cambio de unidades
+    if (modo == FAHRENHEIT){
+        temp_mostrada = 32 + (temp_mostrada * 1.8);
+    }
 
     // Numero
 
@@ -67,7 +83,7 @@ void DisplayTemp::dibujarNumero(){
 
     // Formateo string con valor para mejor visualización
     char  temp_str[6];
-    sprintf(temp_str, "%6.2f", temp);
+    sprintf(temp_str, "%.2f", temp_mostrada);
 
     int posx = alineacion_x;
     int posy = tft.height()/2; // Para que este centrado
@@ -80,6 +96,7 @@ void DisplayTemp::dibujarUnidad(){
     // Unidad
     tft.setFreeFont(FUENTE_UNIDAD);
     tft.setTextDatum(BL_DATUM);
+    tft.setTextColor(TFT_WHITE);
 
     // posicion del reglo
     int reglon_y = (tft.height() + tft.fontHeight(FUENTE_NUM)) / 2;
