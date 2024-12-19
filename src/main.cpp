@@ -8,6 +8,10 @@ bool botonPresionado();
 
 
 void setup() {
+
+    // Para usar con bateria
+    pinMode(15, OUTPUT);
+    digitalWrite(15, HIGH);
     
     Display.init();
     Serial.begin(115200);
