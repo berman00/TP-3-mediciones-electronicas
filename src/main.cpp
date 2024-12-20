@@ -4,8 +4,11 @@
 
 #define BOTON BUTTON_2
 
+#define T_MUESTREO 1000 // ms
+
 bool botonPresionado();
 
+uint32_t ult_conversion_ms;
 
 void setup() {
 
@@ -16,19 +19,30 @@ void setup() {
     Display.init();
     Serial.begin(115200);
 
-    Display.setTemp(24);
+    Display.setTemp(0.0f);
     Display.updateDisplay();
+
+    // Canal analógico
+    pinMode(A0, INPUT);
+    analogReadResolution(12);
 
     // Boton
     pinMode(BOTON, INPUT); // Tiene resistencia pullup en el PCB
+
+    // Tiempo
+    ult_conversion_ms = millis();
 }
 
 void loop() {
 
     Display.updateDisplay();
   
-    if(Serial.available() > 0){
-        Display.setTemp(Serial.parseFloat());
+    if(millis() - ult_conversion_ms > T_MUESTREO) {
+
+        ult_conversion_ms = millis();
+
+        int temp = analogRead(A0);
+        Display.setTemp(temp/10.0f);
     }
 
     if(botonPresionado()){
