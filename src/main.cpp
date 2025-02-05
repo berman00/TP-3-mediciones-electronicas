@@ -89,7 +89,7 @@ float getTemperatura() {
     constexpr int16_t max_cuentas = 0xFFF; // ADC de 12 bits
     constexpr int16_t offset = 6;          // cuando la temp es 0 C la salida del AO de instrumental es 5mv y no puede llegar nunca a 0V
 
-    constexpr float volt_ref = 3.3;
+    constexpr float max_temp = 100.0;
 
-    return ((cuentas - offset) * volt_ref) / ((float)max_cuentas);
+    return ((cuentas - offset) * max_temp) / ((float)max_cuentas);
 }
