@@ -2,11 +2,13 @@
 
 #include "DisplayTemp.hpp"
 
-#define BOTON BUTTON_2
+#define BOTON   BUTTON_2
+#define PIN_ADC A0
 
 #define T_MUESTREO 1000 // ms
 
 bool botonPresionado();
+float getTemperatura();
 
 uint32_t ult_conversion_ms;
 
@@ -23,7 +25,7 @@ void setup() {
     Display.updateDisplay();
 
     // Canal analógico
-    pinMode(A0, INPUT);
+    pinMode(PIN_ADC, INPUT);
     analogReadResolution(12);
 
     // Boton
@@ -41,8 +43,7 @@ void loop() {
 
         ult_conversion_ms = millis();
 
-        int temp = analogRead(A0);
-        Display.setTemp(temp/10.0f);
+        Display.setTemp(getTemperatura());
     }
 
     if(botonPresionado()){
@@ -79,4 +80,16 @@ bool botonPresionado(){
 
     boton_anterior = boton_actual;
     return ret;
+}
+
+float getTemperatura() {
+
+    int16_t cuentas = analogRead(PIN_ADC);
+
+    constexpr int16_t max_cuentas = 0xFFF; // ADC de 12 bits
+    constexpr int16_t offset = 6;          // cuando la temp es 0 C la salida del AO de instrumental es 5mv y no puede llegar nunca a 0V
+
+    constexpr float volt_ref = 3.3;
+
+    return ((cuentas - offset) * volt_ref) / ((float)max_cuentas);
 }
