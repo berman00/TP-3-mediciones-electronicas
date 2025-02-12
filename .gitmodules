@@ -1,0 +1,3 @@
+[submodule "lib/CmdParser"]
+	path = lib/CmdParser
+	url = https://github.com/pvizeli/CmdParser.git
