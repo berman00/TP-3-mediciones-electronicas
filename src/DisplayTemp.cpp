@@ -50,7 +50,7 @@ void DisplayTemp::updateDisplay(){
         grosor_marco,              // x pos
         grosor_marco,              // y pos
         tft.width() - grosor_marco * 2,   // ancho
-        tft.height() - grosor_marco * 2,  // alto
+        tft.height() - grosor_marco * 2 - 20,  // alto (tendo en cuenta el titulo)
         TFT_BLACK
     );
 
