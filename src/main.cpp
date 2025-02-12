@@ -23,6 +23,13 @@ float getTemperatura();
 uint32_t ult_conversion_ms;
 uint16_t cuentas_adc_manual;
 
+static struct constantes_eq_t {
+    double a = 1.973999168146962e-05;
+    double b = 200;
+    double c = 0.499877522324340;
+    double alplha = 0.385; // [Ohms/C]
+} K;
+
 void setup() {
 
     // CLI
@@ -113,12 +120,10 @@ float getTemperatura() {
 
     int16_t cuentas = cuentas_adc_manual;
 
-    constexpr int16_t max_cuentas = 0xFFF; // ADC de 12 bits
-    constexpr int16_t offset = 6;          // cuando la temp es 0 C la salida del AO de instrumental es 5mv y no puede llegar nunca a 0V
+    double num = K.b * ( K.a * (double)cuentas + K.c ) - 100;
+    double den = K.alplha * ( 1 - K.a * (double)cuentas - K.c );
 
-    constexpr float max_temp = 100.0;
-
-    return ((cuentas - offset) * max_temp) / ((float)max_cuentas);
+    return num / den;
 }
 
 void setCuentasAdc(CmdParser *parser) {
