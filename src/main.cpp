@@ -22,8 +22,8 @@ float getTemperatura(int cuentas);
 uint32_t ult_conversion_ms;
 uint16_t cuentas_adc_manual;
 
-Boton botonUnidad(BUTTON_2, true);
-Boton botonCalibracion(BUTTON_1, true);
+Boton botonUnidad(BUTTON_1, true);
+Boton botonCalibracion(BUTTON_2, true);
 
 void setup() {
 
