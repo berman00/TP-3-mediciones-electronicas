@@ -211,8 +211,12 @@ void DisplayTemp::dibujarBarraPresionado(int grosor_marco, float porcentaje){
     int largo_texto = tft.drawString("calibrar", posx, posy);
     int largo_barra = 100;
     int espacio = 3;
+    posx = posx + largo_texto + espacio;
+    
+    int pixeles_completado =  porcentaje < 1.0 ? porcentaje * largo_barra : largo_barra;
 
-    tft.drawRect(posx + largo_texto + espacio, posy, largo_barra, tft.fontHeight(), TFT_WHITE);
+    tft.fillRect(posx, posy, pixeles_completado, tft.fontHeight(), TFT_WHITE);
+    tft.drawRect(posx, posy, largo_barra, tft.fontHeight(), TFT_WHITE);
 }
 
 // Funciones de ayuda

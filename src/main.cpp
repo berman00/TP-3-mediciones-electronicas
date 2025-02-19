@@ -6,7 +6,7 @@
 #define PIN_ADC A0
 
 #define T_MUESTREO 1000 // ms
-
+#define T_MODO_CALIB 1000 //ms
 
 #include <CmdParser.hpp>
 #include <CmdBuffer.hpp>
@@ -80,7 +80,8 @@ void loop() {
     
     // Entrada modo de calibración
     if (botonCalibracion.estaPresionado()){
-        Display.mostrarBarraPresionado(0);
+        float porcentaje_barra = (float)botonCalibracion.getTiempoPresionadoMs()/(float)T_MODO_CALIB;
+        Display.mostrarBarraPresionado(porcentaje_barra);
     }
     else {
         Display.quitarBarraPresionado();
