@@ -21,44 +21,67 @@ void DisplayTemp::init(float min_temp, float max_temp){
 
 void DisplayTemp::setTemp(float temp){
     this->temp = temp;
-    necesario_actualizar = true;
+    actualizar_temp = true;
 }
 
 void DisplayTemp::setModo(modo_t modo){
     this->modo = modo;
-    necesario_actualizar = true;
+    actualizar_temp = true;
 }
 
 void DisplayTemp::toggleModo(){
     this->modo = (modo == CELSIUS) ? FAHRENHEIT : CELSIUS;
-    necesario_actualizar = true;
+    actualizar_temp = true;
+}
+
+void DisplayTemp::mostrarBarraPresionado(float porcentaje) {
+    barra_porcentaje = porcentaje;
+    mostrar_barra_presionado = true;
+}
+
+void DisplayTemp::quitarBarraPresionado() {
+    mostrar_barra_presionado = false;
 }
 
 void DisplayTemp::updateDisplay(){
 
-    // esperar a q transcurra el tiempo de actualizacion
-    if(!necesario_actualizar) {
+    int grosor_marco = 7;
+    
+    if (mostrar_barra_presionado) {
+        dibujarBarraPresionado(grosor_marco, barra_porcentaje);
+    }
+    else {
+        tft.fillRect(
+            grosor_marco + 3,
+            grosor_marco + 3,
+            200,
+            tft.fontHeight(2),
+            TFT_BLACK
+        );
+    }
+    dibujarTitulo(grosor_marco);
+    
+    // el codigo de abajo solo se actualiza cuando cambia la temperatura
+    if(!actualizar_temp) {
         return; // Solo actualizar si es necesario
     }
 
-    necesario_actualizar = false;
+    actualizar_temp = false;
 
-    int grosor_marco = 7;
+
 
     // Lleno con negro el fondo para borrar el numero
     tft.fillRect(
         grosor_marco,              // x pos
-        grosor_marco,              // y pos
+        grosor_marco + 20,              // y pos
         tft.width() - grosor_marco * 2,   // ancho
-        tft.height() - grosor_marco * 2 - 20,  // alto (tendo en cuenta el titulo)
+        tft.height() - grosor_marco * 2 - 40,  // alto (tendo en cuenta el titulo)
         TFT_BLACK
     );
 
     dibujarMarco(grosor_marco);
     dibujarNumero();
     dibujarUnidad();
-    dibujarTitulo(grosor_marco);
-
 }
 
 #define FUENTE_NUM 7
@@ -174,8 +197,25 @@ void DisplayTemp::dibujarTitulo(int grosor_marco){
     tft.drawString("TP3 MEDICIONES - Bellini | Berman | Saitta", posx, posy);
 }
 
+void DisplayTemp::dibujarBarraPresionado(int grosor_marco, float porcentaje){
 
-// Funciones para ayudar
+    tft.setTextFont(2);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(TFT_WHITE);
+
+    int dist_esquina = grosor_marco + 3;
+
+    int posx = dist_esquina;
+    int posy = dist_esquina;
+
+    int largo_texto = tft.drawString("calibrar", posx, posy);
+    int largo_barra = 100;
+    int espacio = 3;
+
+    tft.drawRect(posx + largo_texto + espacio, posy, largo_barra, tft.fontHeight(), TFT_WHITE);
+}
+
+// Funciones de ayuda
 
 
 uint16_t interpolarColor(uint16_t color1, uint16_t color2, float porcentaje) {

@@ -18,6 +18,8 @@ public:
     void updateDisplay();
     void setModo(modo_t modo);
     void toggleModo();
+    void mostrarBarraPresionado(float porcentaje);
+    void quitarBarraPresionado();
 
 private:
 
@@ -29,16 +31,20 @@ private:
 
     modo_t modo = CELSIUS;
 
+    bool mostrar_barra_presionado = false;
+    float barra_porcentaje;
+
     // punto en el eje x a partir de donde se alinea el numero
     // el valor queda a la izquierda y la unidad a la derecha
     static constexpr int alineacion_x = 210;
 
-    bool necesario_actualizar = true;
+    bool actualizar_temp = true;
 
     void dibujarNumero();
     void dibujarMarco(int grosor);
     void dibujarUnidad();
     void dibujarTitulo(int grosor_marco);
+    void dibujarBarraPresionado(int grosor_marco, float porcentaje);
 
 };
 
