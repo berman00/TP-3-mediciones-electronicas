@@ -2,9 +2,14 @@
 
 #include "TFT_eSPI.h"
     
-enum modo_t {
+enum unidad_t {
     CELSIUS,
     FAHRENHEIT
+};
+
+enum modo_t {
+    Disp_MEDICION,
+    Disp_CALIBRACION
 };
 
 class DisplayTemp {
@@ -16,8 +21,9 @@ public:
 
     void setTemp(float temp);
     void updateDisplay();
+    void setUnidad(unidad_t unidad);
+    void toggleUnidad();
     void setModo(modo_t modo);
-    void toggleModo();
     void mostrarBarraPresionado(float porcentaje);
     void quitarBarraPresionado();
 
@@ -29,7 +35,8 @@ private:
     float max_temp;
     float min_temp;
 
-    modo_t modo = CELSIUS;
+    unidad_t unidad = CELSIUS;
+    modo_t modo = Disp_MEDICION;
 
     bool mostrar_barra_presionado = false;
     float barra_porcentaje;
@@ -39,9 +46,10 @@ private:
     static constexpr int alineacion_x = 210;
 
     bool actualizar_temp = true;
+    bool cambiar_modo = true;
 
     void dibujarNumero();
-    void dibujarMarco(int grosor);
+    void dibujarMarco(int grosor, uint16_t color);
     void dibujarUnidad();
     void dibujarTitulo(int grosor_marco);
     void dibujarBarraPresionado(int grosor_marco, float porcentaje);

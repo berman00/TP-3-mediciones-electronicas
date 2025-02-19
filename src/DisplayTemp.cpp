@@ -24,14 +24,19 @@ void DisplayTemp::setTemp(float temp){
     actualizar_temp = true;
 }
 
-void DisplayTemp::setModo(modo_t modo){
-    this->modo = modo;
+void DisplayTemp::setUnidad(unidad_t unidad){
+    this->unidad = unidad;
     actualizar_temp = true;
 }
 
-void DisplayTemp::toggleModo(){
-    this->modo = (modo == CELSIUS) ? FAHRENHEIT : CELSIUS;
+void DisplayTemp::toggleUnidad(){
+    this->unidad = (unidad == CELSIUS) ? FAHRENHEIT : CELSIUS;
     actualizar_temp = true;
+}
+
+void DisplayTemp::setModo(modo_t modo) {
+    this->modo = modo;
+    cambiar_modo = true;
 }
 
 void DisplayTemp::mostrarBarraPresionado(float porcentaje) {
@@ -46,32 +51,55 @@ void DisplayTemp::quitarBarraPresionado() {
 void DisplayTemp::updateDisplay(){
 
     int grosor_marco = 7;
-    
-    if (mostrar_barra_presionado) {
-        dibujarBarraPresionado(grosor_marco, barra_porcentaje);
-    }
-    else {
+    uint16_t color_marco;
+
+    // Si se cambio el modo borrar toda la pantalla para que no queden restos
+    if (cambiar_modo) {
+        cambiar_modo = false;
         tft.fillRect(
-            grosor_marco + 3,
-            grosor_marco + 3,
-            200,
-            tft.fontHeight(2),
+            grosor_marco,              // x pos
+            grosor_marco,              // y pos
+            tft.width() - grosor_marco * 2,   // ancho
+            tft.height() - grosor_marco * 2,  // alto
             TFT_BLACK
         );
     }
-    dibujarTitulo(grosor_marco);
+
+    switch (modo) {
+    case Disp_MEDICION:
+        if (mostrar_barra_presionado) {
+            dibujarBarraPresionado(grosor_marco, barra_porcentaje);
+        }
+        else {
+            tft.fillRect(
+                grosor_marco + 3,
+                grosor_marco + 3,
+                200,
+                tft.fontHeight(2),
+                TFT_BLACK
+            );
+        }
+        // Color entre azul y rojo que varia segun temp
+        color_marco = interpolarColor(TFT_BLUE, TFT_RED, ((temp - min_temp) / (max_temp - min_temp)));
+        if(actualizar_temp) {
+            actualizar_temp = false;
+            dibujarNumero();
+            dibujarUnidad();
+        }
+        break;
+
+    case Disp_CALIBRACION:
+        color_marco = TFT_GREEN;
+        break;
     
-    // el codigo de abajo solo se actualiza cuando cambia la temperatura
-    if(!actualizar_temp) {
-        return; // Solo actualizar si es necesario
+    default:
+        modo = Disp_MEDICION;
+        break;
     }
+    
 
-    actualizar_temp = false;
-
-
-    dibujarMarco(grosor_marco);
-    dibujarNumero();
-    dibujarUnidad();
+    dibujarMarco(grosor_marco, color_marco);
+    dibujarTitulo(grosor_marco);
 }
 
 #define FUENTE_NUM 7
@@ -96,7 +124,7 @@ void DisplayTemp::dibujarNumero(){
     }
 
     // Cambio de unidades
-    if (modo == FAHRENHEIT){
+    if (unidad == FAHRENHEIT){
         temp_mostrada = 32 + (temp_mostrada * 1.8);
     }
 
@@ -143,7 +171,7 @@ void DisplayTemp::dibujarUnidad(){
 
     char unidad_str[4];
 
-    switch(modo){
+    switch(unidad){
     case CELSIUS:
         sprintf(unidad_str, "C"); 
         break;
@@ -155,11 +183,7 @@ void DisplayTemp::dibujarUnidad(){
     tft.drawString(unidad_str, unidad_x, unidad_y);
 }
 
-void DisplayTemp::dibujarMarco(int grosor){
-
-    // Color entre azul y rojo que varia segun temp
-    uint16_t color_temp = interpolarColor(
-        TFT_BLUE, TFT_RED, ((temp - min_temp) / (max_temp - min_temp)));
+void DisplayTemp::dibujarMarco(int grosor, uint16_t color){
     
 
     for (int i = 0; i < grosor; i++){
@@ -168,7 +192,7 @@ void DisplayTemp::dibujarMarco(int grosor){
             i,              // y pos
             tft.width() - i * 2,   // ancho
             tft.height() - i * 2,  // alto
-            color_temp
+            color
         );
     }
 }

@@ -21,9 +21,15 @@ float getTemperatura(int cuentas);
 
 uint32_t ult_conversion_ms;
 uint16_t cuentas_adc_manual;
+bool bandera_salida_calib;
 
 Boton botonUnidad(BUTTON_1, true);
 Boton botonCalibracion(BUTTON_2, true);
+
+enum {
+    MEDICION,
+    CALIBRACION
+} modo;
 
 void setup() {
 
@@ -34,7 +40,6 @@ void setup() {
 
     cmdCallback.addCmd(PSTR("CUENTAS"), &setCuentasAdc);
     myBuffer.setEcho(true);
-
 
 
     // Para usar con bateria
@@ -57,6 +62,10 @@ void setup() {
 
     // Tiempo
     ult_conversion_ms = millis();
+
+    // Modo
+    modo = MEDICION;
+    bandera_salida_calib = true;
 }
 
 void loop() {
@@ -64,28 +73,54 @@ void loop() {
     // CLI
     cmdCallback.updateCmdProcessing(&cmdParser, &myBuffer, &Serial);
 
-    if(botonUnidad.fuePresionado()){
-        Display.toggleModo();
-    }
-    
-    // Muestreo
-    if(millis() - ult_conversion_ms > T_MUESTREO) {
+    switch (modo) {
+
+    case MEDICION:
+
+        if(botonUnidad.fuePresionado()){
+            Display.toggleUnidad();
+        }       
+        // Muestreo
+        if(millis() - ult_conversion_ms > T_MUESTREO) {
+            
+            ult_conversion_ms = millis();
+            
+            int cuentas = cuentas_adc_manual;
+            
+            Display.setTemp(getTemperatura(cuentas));
+        }
         
-        ult_conversion_ms = millis();
-        
-        int cuentas = cuentas_adc_manual;
-        
-        Display.setTemp(getTemperatura(cuentas));
+        // Entrada modo de calibración
+        if (botonCalibracion.fueSoltado()) bandera_salida_calib = true;
+        if (botonCalibracion.estaPresionado() && bandera_salida_calib){
+            float porcentaje_barra = (float)botonCalibracion.getTiempoPresionadoMs()/(float)T_MODO_CALIB;
+            Display.mostrarBarraPresionado(porcentaje_barra);
+            if (porcentaje_barra > 1.0) {
+                modo = CALIBRACION;
+                Display.setModo(Disp_CALIBRACION);
+                botonCalibracion.fuePresionado(); // Borro la bandera para no salir del modo inmediatamente
+            }
+        }
+        else {
+            Display.quitarBarraPresionado();
+        }
+        break;
+
+    case CALIBRACION:
+
+        // Entrada modo Medicion
+        if (botonCalibracion.fuePresionado()){
+            modo = MEDICION;
+            Display.setModo(Disp_MEDICION);
+            bandera_salida_calib = false;
+            Display.quitarBarraPresionado(); // Elimina un residuo  dura 1 frame
+        }
+        break;
+    default:
+        modo = MEDICION;
+        break;
     }
-    
-    // Entrada modo de calibración
-    if (botonCalibracion.estaPresionado()){
-        float porcentaje_barra = (float)botonCalibracion.getTiempoPresionadoMs()/(float)T_MODO_CALIB;
-        Display.mostrarBarraPresionado(porcentaje_barra);
-    }
-    else {
-        Display.quitarBarraPresionado();
-    }
+
     
     // Display
     Display.updateDisplay();
