@@ -23,13 +23,6 @@ float getTemperatura();
 uint32_t ult_conversion_ms;
 uint16_t cuentas_adc_manual;
 
-static struct constantes_eq_t {
-    double a = 1.973999168146962e-05;
-    double b = 200;
-    double c = 0.499877522324340;
-    double alplha = 0.385; // [Ohms/C]
-} K;
-
 void setup() {
 
     // CLI
@@ -118,12 +111,31 @@ bool botonPresionado(){
 
 float getTemperatura() {
 
+        /*
+            Valores para V salida de amplificador operacional /
+            entrada del ADC
+
+            max = 3.2 V
+            min = 20  mV
+
+            Para trabajar en la zona lineal de los AO
+
+            Valores calculados con MATLAB
+            Deben cambiar si cambia alguno de los parámetros del circuito
+        */
+
+        double Ka = 2.045385930517057e-05;
+        double Kc = 0.499492372400881;
+        double alplha = 0.385; // [Ohms/C°]
+
     int16_t cuentas = cuentas_adc_manual;
 
-    double num = K.b * ( K.a * (double)cuentas + K.c ) - 100;
-    double den = K.alplha * ( 1 - K.a * (double)cuentas - K.c );
+    double temp_float = ( -100.0 / alplha ) * ( ( 1 - 2*Ka*cuentas - 2*Kc ) / ( 1 - Ka*cuentas - Kc) ); 
 
-    return num / den;
+    // limitamos los valores a resoluciones de 0.05
+    int16_t temp_en_2000_cuentas = 20 * temp_float; // Redondea para abajo
+    
+    return (float) (temp_en_2000_cuentas / 20.0);
 }
 
 void setCuentasAdc(CmdParser *parser) {
