@@ -69,16 +69,6 @@ void DisplayTemp::updateDisplay(){
     actualizar_temp = false;
 
 
-
-    // Lleno con negro el fondo para borrar el numero
-    tft.fillRect(
-        grosor_marco,              // x pos
-        grosor_marco + 20,              // y pos
-        tft.width() - grosor_marco * 2,   // ancho
-        tft.height() - grosor_marco * 2 - 40,  // alto (tendo en cuenta el titulo)
-        TFT_BLACK
-    );
-
     dibujarMarco(grosor_marco);
     dibujarNumero();
     dibujarUnidad();
@@ -94,15 +84,15 @@ void DisplayTemp::dibujarNumero(){
     float temp_mostrada;
     if (temp>max_temp){
         temp_mostrada = max_temp;
-        tft.setTextColor(TFT_RED);
+        tft.setTextColor(TFT_RED, TFT_BLACK);
     }
     else if (temp<min_temp){
         temp_mostrada = min_temp;
-        tft.setTextColor(TFT_RED);
+        tft.setTextColor(TFT_RED, TFT_BLACK);
     }
     else{
         temp_mostrada = temp;
-        tft.setTextColor(TFT_WHITE);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
     }
 
     // Cambio de unidades
@@ -116,8 +106,8 @@ void DisplayTemp::dibujarNumero(){
     tft.setTextDatum(MR_DATUM); // Mido desde el medio a la derecha para alinear el texto a la derecha100
 
     // Formateo string con valor para mejor visualización
-    char  temp_str[6];
-    sprintf(temp_str, "%.2f", temp_mostrada);
+    char  temp_str[20];
+    sprintf(temp_str, "%8.2f", temp_mostrada); // Tengo q dejar bastente espacio de padding para que se borren los caracteres entre actualizaciones
 
     int posx = alineacion_x;
     int posy = tft.height()/2; // Para que este centrado
@@ -130,7 +120,7 @@ void DisplayTemp::dibujarUnidad(){
     // Unidad
     tft.setFreeFont(FUENTE_UNIDAD);
     tft.setTextDatum(BL_DATUM);
-    tft.setTextColor(TFT_WHITE);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
     // posicion del reglo
     int reglon_y = (tft.height() + tft.fontHeight(FUENTE_NUM)) / 2;
@@ -151,14 +141,14 @@ void DisplayTemp::dibujarUnidad(){
     int unidad_x = centro_x + (radio * 2) - 10;
     int unidad_y = reglon_y + 9; // bajo un poco la letra para que este sobre el reglon
 
-    char unidad_str[2];
+    char unidad_str[4];
 
     switch(modo){
     case CELSIUS:
         sprintf(unidad_str, "C"); 
         break;
     case FAHRENHEIT:
-        sprintf(unidad_str, "F"); 
+        sprintf(unidad_str, "F  "); 
         break;
     }
 
