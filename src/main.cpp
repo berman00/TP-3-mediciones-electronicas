@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
 #include "DisplayTemp.hpp"
+#include "Boton.hpp"
 
-#define BOTON   BUTTON_2
 #define PIN_ADC A0
 
 #define T_MUESTREO 1000 // ms
@@ -17,11 +17,13 @@ CmdBuffer<32> myBuffer;
 CmdCallback<1> cmdCallback;
 
 void setCuentasAdc(CmdParser *parser);
-bool botonPresionado();
 float getTemperatura();
 
 uint32_t ult_conversion_ms;
 uint16_t cuentas_adc_manual;
+
+Boton botonUnidad(BUTTON_2, true);
+Boton botonCalibracion(BUTTON_1, true);
 
 void setup() {
 
@@ -49,8 +51,9 @@ void setup() {
     pinMode(PIN_ADC, INPUT);
     analogReadResolution(12);
 
-    // Boton
-    pinMode(BOTON, INPUT); // Tiene resistencia pullup en el PCB
+    // Botones
+    botonUnidad.init();
+    botonCalibracion.init();
 
     // Tiempo
     ult_conversion_ms = millis();
@@ -64,7 +67,7 @@ void loop() {
     // Display
     Display.updateDisplay();
     
-    if(botonPresionado()){
+    if(botonUnidad.fuePresionado()){
         Display.toggleModo();
     }
 
@@ -79,35 +82,6 @@ void loop() {
 
 }
 
-bool botonPresionado(){
-
-    static bool boton_anterior = false;
-    bool boton_actual = !digitalRead(BOTON); // Es un pullup
-    bool ret = false;
-
-    // Hago un debounce cuando suelto el boton
-    static uint32_t tiempo_debounce = 0;
-    static bool debounce = false;
-
-    if (debounce){
-        if (millis() - tiempo_debounce > 50){
-            debounce = false;
-        }
-        return false;
-    }
-
-    if(!boton_actual && boton_anterior) {
-        debounce = true;
-        tiempo_debounce = millis();
-    }
-
-    else if (!boton_anterior && boton_actual){
-        ret = true;
-    }
-
-    boton_anterior = boton_actual;
-    return ret;
-}
 
 float getTemperatura() {
 
