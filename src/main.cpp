@@ -5,7 +5,7 @@
 
 #define PIN_ADC A0
 
-#define T_MUESTREO 1000 // ms
+#define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
 
 #include <CmdParser.hpp>
