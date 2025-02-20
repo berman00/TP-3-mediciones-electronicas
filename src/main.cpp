@@ -11,19 +11,10 @@
 #define V_INS_MIN_CUENTAS 37   // [cuentas] = 30  mV
 #define V_INS_MAX_CUENTAS 3970 // [cuentas] = 3.2 V
 
-#include <CmdParser.hpp>
-#include <CmdBuffer.hpp>
-#include <CmdCallback.hpp>
 
-CmdParser cmdParser;
-CmdBuffer<32> myBuffer;
-CmdCallback<1> cmdCallback;
-
-void setCuentasAdc(CmdParser *parser);
 float getTemperatura(int cuentas);
 
 uint32_t ult_conversion_ms;
-uint16_t cuentas_adc_manual;
 bool bandera_salida_calib;
 
 Boton botonUnidad(BUTTON_1, true);
@@ -40,14 +31,6 @@ enum {
 } calib_submodo;
 
 void setup() {
-
-    // CLI
-    Serial.begin(115200);
-    delay(1000);
-    Serial.println("Serial listo");
-
-    cmdCallback.addCmd(PSTR("CUENTAS"), &setCuentasAdc);
-    myBuffer.setEcho(true);
 
 
     // Para usar con bateria
@@ -79,9 +62,6 @@ void setup() {
 void loop() {
 
     int cuentas;
-
-    // CLI
-    cmdCallback.updateCmdProcessing(&cmdParser, &myBuffer, &Serial);
 
     switch (modo) {
 
@@ -120,7 +100,7 @@ void loop() {
     case CALIBRACION:
 
         float pos_aguja;
-        cuentas = cuentas_adc_manual;
+        cuentas = analogRead(PIN_ADC);
         
         switch (calib_submodo) {
         case CALIB_POTE:
@@ -139,7 +119,7 @@ void loop() {
                 modo = MEDICION;
                 Display.setModo(Disp_MEDICION);
                 bandera_salida_calib = false;
-                Display.quitarBarraPresionado(); // Elimina un residuo  dura 1 frame
+                Display.quitarBarraPresionado(); // Elimina un residuo q dura 1 frame
             }
             break;
             
@@ -192,15 +172,4 @@ float getTemperatura(int cuentas) {
     int16_t temp_en_2000_cuentas = 20 * temp_float; // Redondea para abajo
     
     return (float) (temp_en_2000_cuentas / 20.0);
-}
-
-void setCuentasAdc(CmdParser *parser) {
-
-    if (parser->getParamCount() != 2) {
-        Serial.println("Especificar el valor de cuentas ADC");
-        return;
-    }
-
-    String param_string = String(parser->getCmdParam(1));
-    cuentas_adc_manual = param_string.toInt();
 }
