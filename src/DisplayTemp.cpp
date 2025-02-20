@@ -145,7 +145,7 @@ void DisplayTemp::dibujarNumero(int grosor_marco){
     }
     else{
         temp_mostrada = temp;
-        tft.setTextColor(TFT_WHITE, TFT_ORANGE);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
     }
 
     // Cambio de unidades
@@ -174,7 +174,7 @@ void DisplayTemp::dibujarUnidad(){
     // Unidad
     tft.setFreeFont(FUENTE_UNIDAD);
     tft.setTextDatum(BL_DATUM);
-    tft.setTextColor(TFT_WHITE, TFT_ORANGE);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextPadding(tft.textWidth("C")); // C es la letra mas grande
 
     // posicion del reglo
@@ -262,14 +262,10 @@ void DisplayTemp::dibujarBarraPresionado(int grosor_marco, float porcentaje){
 
 void DisplayTemp::dibujarAgujaCalibracion(float pos_aguja){
     
-    uint8_t bitmap[] = {
-        0xc0, 0x40, 0x30, 0x10, 0x0c, 0x04, 0x03, 0x01
-    };
 
     int posx = 10;
     int posy = 10;
     
-    tft.drawBitmap(posx, posy, bitmap, 8, 8, TFT_ORANGE);
 
 }
 
