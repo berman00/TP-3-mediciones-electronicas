@@ -101,12 +101,14 @@ void DisplayTemp::updateDisplay(){
         tft.setTextPadding(tft.width() - posx - grosor_marco);
         switch (submodo) {
         case Disp_CALIB_POTE:
+            dibujarAgujaCalibracion(pos_aguja);
             tft.drawString("Offset", posx, posy, 4);
             posy += tft.fontHeight(4);
             tft.drawString("Usar resistencia patron", posx, posy,2);
             break;
 
         case Disp_CALIB_GANANCIA:
+            dibujarAgujaCalibracion(pos_aguja);
             tft.drawString("Ganancia", posx, posy,4);
             posy += tft.fontHeight(4);
             tft.drawString("Medir agua hirviendo (100 C)", posx, posy,2);
@@ -254,6 +256,19 @@ void DisplayTemp::dibujarBarraPresionado(int grosor_marco, float porcentaje){
 
     tft.fillRect(posx, posy, pixeles_completado, tft.fontHeight(), TFT_WHITE);
     tft.drawRect(posx, posy, largo_barra, tft.fontHeight(), TFT_WHITE);
+}
+
+void DisplayTemp::dibujarAgujaCalibracion(float pos_aguja){
+    
+    uint8_t bitmap[] = {
+        0xc0, 0x40, 0x30, 0x10, 0x0c, 0x04, 0x03, 0x01
+    };
+
+    int posx = 10;
+    int posy = 10;
+    
+    tft.drawBitmap(posx, posy, bitmap, 8, 8, TFT_ORANGE);
+
 }
 
 // Funciones de ayuda
