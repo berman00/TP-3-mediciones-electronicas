@@ -8,7 +8,7 @@
 #define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
 
-#define V_INS_MIN_CUENTAS 25   // [cuentas] = 20  mV
+#define V_INS_MIN_CUENTAS 37   // [cuentas] = 30  mV
 #define V_INS_MAX_CUENTAS 3970 // [cuentas] = 3.2 V
 
 #include <CmdParser.hpp>
@@ -166,11 +166,15 @@ void loop() {
 float getTemperatura(int cuentas) {
 
         /*
+            Se usaron los sig valores
+
+            Vexc = 5V
+
             Valores para V salida de amplificador operacional /
             entrada del ADC
 
             max = 3.2 V
-            min = 20  mV
+            min = 30  mV
 
             Para trabajar en la zona lineal de los AO
 
@@ -178,8 +182,8 @@ float getTemperatura(int cuentas) {
             Deben cambiar si cambia alguno de los parámetros del circuito
         */
 
-        double Ka = 2.045385930517057e-05;
-        double Kc = 0.499492372400881;
+        double Ka = 2.051838252064429e-05;
+        double Kc = 0.499236156577981;
         double alplha = 0.385; // [Ohms/C°]
 
     double temp_float = ( -100.0 / alplha ) * ( ( 1 - 2*Ka*cuentas - 2*Kc ) / ( 1 - Ka*cuentas - Kc) ); 
