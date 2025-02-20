@@ -56,7 +56,7 @@ private:
     bool actualizar_temp = true;
     bool cambiar_modo = true;
 
-    void dibujarNumero();
+    void dibujarNumero(int grosor_marco);
     void dibujarMarco(int grosor, uint16_t color);
     void dibujarUnidad();
     void dibujarTitulo(int grosor_marco);

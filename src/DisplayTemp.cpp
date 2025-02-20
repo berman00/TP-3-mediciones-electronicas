@@ -88,7 +88,7 @@ void DisplayTemp::updateDisplay(){
         color_marco = interpolarColor(TFT_BLUE, TFT_RED, ((temp - min_temp) / (max_temp - min_temp)));
         if(actualizar_temp) {
             actualizar_temp = false;
-            dibujarNumero();
+            dibujarNumero(grosor_marco);
             dibujarUnidad();
         }
         break;
@@ -130,7 +130,7 @@ void DisplayTemp::updateDisplay(){
 #define FUENTE_NUM 7
 #define FUENTE_UNIDAD &FreeSans24pt7b
 
-void DisplayTemp::dibujarNumero(){
+void DisplayTemp::dibujarNumero(int grosor_marco){
 
 
     // Manejo de valores fuera del rango
@@ -145,7 +145,7 @@ void DisplayTemp::dibujarNumero(){
     }
     else{
         temp_mostrada = temp;
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setTextColor(TFT_WHITE, TFT_ORANGE);
     }
 
     // Cambio de unidades
@@ -156,14 +156,15 @@ void DisplayTemp::dibujarNumero(){
     // Numero
 
     tft.setTextFont(FUENTE_NUM); // Digitos 7 segmentos
-    tft.setTextDatum(MR_DATUM); // Mido desde el medio a la derecha para alinear el texto a la derecha100
-
+    tft.setTextDatum(MR_DATUM); // Mido desde el medio a la derecha para alinear el texto a la derecha
+    
     // Formateo string con valor para mejor visualización
     char  temp_str[20];
-    sprintf(temp_str, "%8.2f", temp_mostrada); // Tengo q dejar bastente espacio de padding para que se borren los caracteres entre actualizaciones
-
+    sprintf(temp_str, "%.2f", temp_mostrada); // Tengo q dejar bastente espacio de padding para que se borren los caracteres entre actualizaciones
+    
     int posx = alineacion_x;
     int posy = tft.height()/2; // Para que este centrado
+    tft.setTextPadding(alineacion_x-grosor_marco);
 
     tft.drawString(temp_str, posx, posy);
 }
@@ -173,7 +174,8 @@ void DisplayTemp::dibujarUnidad(){
     // Unidad
     tft.setFreeFont(FUENTE_UNIDAD);
     tft.setTextDatum(BL_DATUM);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_ORANGE);
+    tft.setTextPadding(tft.textWidth("C")); // C es la letra mas grande
 
     // posicion del reglo
     int reglon_y = (tft.height() + tft.fontHeight(FUENTE_NUM)) / 2;
@@ -201,7 +203,7 @@ void DisplayTemp::dibujarUnidad(){
         sprintf(unidad_str, "C"); 
         break;
     case FAHRENHEIT:
-        sprintf(unidad_str, "F  "); 
+        sprintf(unidad_str, "F"); 
         break;
     }
 
