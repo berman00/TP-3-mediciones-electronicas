@@ -61,7 +61,7 @@ private:
     void dibujarUnidad();
     void dibujarTitulo(int grosor_marco);
     void dibujarBarraPresionado(int grosor_marco, float porcentaje);
-    void dibujarAgujaCalibracion(float pos);
+    void dibujarAgujaCalibracion(float pos, int grosor_marco);
 
 };
 

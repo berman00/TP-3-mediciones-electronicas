@@ -94,21 +94,20 @@ void DisplayTemp::updateDisplay(){
         break;
 
     case Disp_CALIBRACION:
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setTextDatum(TL_DATUM);
+        dibujarAgujaCalibracion(pos_aguja, grosor_marco);
         int posx = grosor_marco + 10;
         int posy = tft.height()/2 + 10;
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setTextDatum(TL_DATUM);
         tft.setTextPadding(tft.width() - posx - grosor_marco);
         switch (submodo) {
         case Disp_CALIB_POTE:
-            dibujarAgujaCalibracion(pos_aguja);
             tft.drawString("Offset", posx, posy, 4);
             posy += tft.fontHeight(4);
             tft.drawString("Usar resistencia patron", posx, posy,2);
             break;
 
         case Disp_CALIB_GANANCIA:
-            dibujarAgujaCalibracion(pos_aguja);
             tft.drawString("Ganancia", posx, posy,4);
             posy += tft.fontHeight(4);
             tft.drawString("Medir agua hirviendo (100 C)", posx, posy,2);
@@ -260,12 +259,51 @@ void DisplayTemp::dibujarBarraPresionado(int grosor_marco, float porcentaje){
     tft.drawRect(posx, posy, largo_barra, tft.fontHeight(), TFT_WHITE);
 }
 
-void DisplayTemp::dibujarAgujaCalibracion(float pos_aguja){
+void DisplayTemp::dibujarAgujaCalibracion(float pos_aguja, int grosor_marco){
     
+    int posx;
+    int posy;
 
-    int posx = 10;
-    int posy = 10;
-    
+    // Barra de referencia
+    int dist_de_marco = 10;
+    int ancho_barra = tft.width()-2*grosor_marco-2*dist_de_marco;
+    tft.setTextFont(4);
+    tft.setTextDatum(TC_DATUM);
+    tft.setTextColor(TFT_WHITE, TFT_ORANGE);
+    tft.setTextPadding(ancho_barra); // ancho de la barra
+
+    posx = tft.width()/2;
+    posy = tft.height()/3;
+
+    tft.drawString("<< | | | | | | ^ | | | | | | >>", posx, posy);
+
+    // Aguja
+    int ancho_aguja = tft.textWidth("v");
+    tft.setTextDatum(BC_DATUM);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextPadding(ancho_aguja + 2); // Agrego un poco de padding por las dudas
+
+    int rango = ancho_barra - ancho_aguja;
+    int pos_en_rango = (int)((float)((pos_aguja + 1.0) / 2.0) * rango);
+    if (pos_en_rango > rango) pos_en_rango = rango;
+    else if (pos_en_rango < 0) pos_en_rango = 0;
+    posx = grosor_marco + dist_de_marco + pos_en_rango + ancho_aguja/2;
+    tft.drawString("v", posx, posy);
+
+    // Rectangulos para borrar agujas anteriores
+    int alto = tft.fontHeight();
+    posy = posy - alto; // Datum arriba a la izq
+
+    // Rectangulo izq
+    posx = grosor_marco;
+    int ancho = dist_de_marco + pos_en_rango - 1;
+    tft.fillRect(posx, posy, ancho, alto, TFT_BLACK);
+
+    // Rectangulo der
+    posx = grosor_marco + dist_de_marco + pos_en_rango + ancho_aguja + 1;
+    ancho = tft.width() - posx - grosor_marco;
+    tft.fillRect(posx, posy, ancho, alto, TFT_BLACK);
+
 
 }
 

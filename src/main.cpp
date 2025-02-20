@@ -78,6 +78,8 @@ void setup() {
 
 void loop() {
 
+    int cuentas;
+
     // CLI
     cmdCallback.updateCmdProcessing(&cmdParser, &myBuffer, &Serial);
 
@@ -93,7 +95,7 @@ void loop() {
             
             ult_conversion_ms = millis();
             
-            int cuentas = analogRead(PIN_ADC);
+            cuentas = analogRead(PIN_ADC);
             
             Display.setTemp(getTemperatura(cuentas));
         }
@@ -117,16 +119,21 @@ void loop() {
 
     case CALIBRACION:
 
+        float pos_aguja;
+        cuentas = cuentas_adc_manual;
+        
         switch (calib_submodo) {
         case CALIB_POTE:
-            Display.mostrarCalibracion(Disp_CALIB_POTE, 0);
+            pos_aguja = (cuentas - V_INS_MIN_CUENTAS) / 20.0;  // rango [V_INS_MIN_CUENTAS - 20; V_INS_MIN_CUENTAS + 20]
+            Display.mostrarCalibracion(Disp_CALIB_POTE, pos_aguja);
             // Entrada prox submodo
             if (botonCalibracion.fuePresionado()) {
                 calib_submodo = CALIB_GANACIA;
             }
             break;
         case CALIB_GANACIA:
-            Display.mostrarCalibracion(Disp_CALIB_GANANCIA, 0);
+            pos_aguja = (cuentas - V_INS_MAX_CUENTAS) / 100.0; // rango [V_INS_MAX_CUENTAS - 100; V_INS_MAX_CUENTAS + 100]
+            Display.mostrarCalibracion(Disp_CALIB_GANANCIA, pos_aguja);
             // Entrada modo Medicion
             if (botonCalibracion.fuePresionado()){
                 modo = MEDICION;
