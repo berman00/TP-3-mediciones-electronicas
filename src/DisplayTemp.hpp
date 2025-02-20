@@ -12,6 +12,11 @@ enum modo_t {
     Disp_CALIBRACION
 };
 
+enum submodo_t {
+    Disp_CALIB_POTE,
+    Disp_CALIB_GANANCIA
+};
+
 class DisplayTemp {
 public:
 
@@ -26,6 +31,7 @@ public:
     void setModo(modo_t modo);
     void mostrarBarraPresionado(float porcentaje);
     void quitarBarraPresionado();
+    void mostrarCalibracion(submodo_t submodo, float pos_aguja);
 
 private:
 
@@ -37,9 +43,11 @@ private:
 
     unidad_t unidad = CELSIUS;
     modo_t modo = Disp_MEDICION;
+    submodo_t submodo;
 
     bool mostrar_barra_presionado = false;
     float barra_porcentaje;
+    float pos_aguja;
 
     // punto en el eje x a partir de donde se alinea el numero
     // el valor queda a la izquierda y la unidad a la derecha
@@ -53,6 +61,7 @@ private:
     void dibujarUnidad();
     void dibujarTitulo(int grosor_marco);
     void dibujarBarraPresionado(int grosor_marco, float porcentaje);
+    void dibujarAgujaCalibracion(float pos);
 
 };
 

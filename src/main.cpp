@@ -8,6 +8,9 @@
 #define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
 
+#define V_INS_MIN_CUENTAS 25   // [cuentas] = 20  mV
+#define V_INS_MAX_CUENTAS 3970 // [cuentas] = 3.2 V
+
 #include <CmdParser.hpp>
 #include <CmdBuffer.hpp>
 #include <CmdCallback.hpp>
@@ -30,6 +33,11 @@ enum {
     MEDICION,
     CALIBRACION
 } modo;
+
+enum {
+    CALIB_POTE,
+    CALIB_GANACIA
+} calib_submodo;
 
 void setup() {
 
@@ -85,18 +93,19 @@ void loop() {
             
             ult_conversion_ms = millis();
             
-            int cuentas = cuentas_adc_manual;
+            int cuentas = analogRead(PIN_ADC);
             
             Display.setTemp(getTemperatura(cuentas));
         }
         
         // Entrada modo de calibración
-        if (botonCalibracion.fueSoltado()) bandera_salida_calib = true;
+        if (botonCalibracion.fueSoltado()) bandera_salida_calib = true; // Para q no aparezca el mensaje de calibracion cuando salis de ese modo
         if (botonCalibracion.estaPresionado() && bandera_salida_calib){
             float porcentaje_barra = (float)botonCalibracion.getTiempoPresionadoMs()/(float)T_MODO_CALIB;
             Display.mostrarBarraPresionado(porcentaje_barra);
             if (porcentaje_barra > 1.0) {
                 modo = CALIBRACION;
+                calib_submodo = CALIB_POTE;
                 Display.setModo(Disp_CALIBRACION);
                 botonCalibracion.fuePresionado(); // Borro la bandera para no salir del modo inmediatamente
             }
@@ -108,16 +117,35 @@ void loop() {
 
     case CALIBRACION:
 
-        // Entrada modo Medicion
-        if (botonCalibracion.fuePresionado()){
+        switch (calib_submodo) {
+        case CALIB_POTE:
+            Display.mostrarCalibracion(Disp_CALIB_POTE, 0);
+            // Entrada prox submodo
+            if (botonCalibracion.fuePresionado()) {
+                calib_submodo = CALIB_GANACIA;
+            }
+            break;
+        case CALIB_GANACIA:
+            Display.mostrarCalibracion(Disp_CALIB_GANANCIA, 0);
+            // Entrada modo Medicion
+            if (botonCalibracion.fuePresionado()){
+                modo = MEDICION;
+                Display.setModo(Disp_MEDICION);
+                bandera_salida_calib = false;
+                Display.quitarBarraPresionado(); // Elimina un residuo  dura 1 frame
+            }
+            break;
+            
+        default: // Algo salio mal, volver a modo de medicion
             modo = MEDICION;
             Display.setModo(Disp_MEDICION);
-            bandera_salida_calib = false;
-            Display.quitarBarraPresionado(); // Elimina un residuo  dura 1 frame
+            break;
         }
         break;
+
     default:
         modo = MEDICION;
+        Display.setModo(Disp_MEDICION);
         break;
     }
 

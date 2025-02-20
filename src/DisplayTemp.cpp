@@ -48,6 +48,11 @@ void DisplayTemp::quitarBarraPresionado() {
     mostrar_barra_presionado = false;
 }
 
+void DisplayTemp::mostrarCalibracion(submodo_t submodo, float pos_aguja) {
+    this->submodo = submodo;
+    this->pos_aguja = pos_aguja;
+}
+
 void DisplayTemp::updateDisplay(){
 
     int grosor_marco = 7;
@@ -89,11 +94,29 @@ void DisplayTemp::updateDisplay(){
         break;
 
     case Disp_CALIBRACION:
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setTextDatum(TL_DATUM);
+        int posx = grosor_marco + 10;
+        int posy = tft.height()/2 + 10;
+        tft.setTextPadding(tft.width() - posx - grosor_marco);
+        switch (submodo) {
+        case Disp_CALIB_POTE:
+            tft.drawString("Offset", posx, posy, 4);
+            posy += tft.fontHeight(4);
+            tft.drawString("Usar resistencia patron", posx, posy,2);
+            break;
+
+        case Disp_CALIB_GANANCIA:
+            tft.drawString("Ganancia", posx, posy,4);
+            posy += tft.fontHeight(4);
+            tft.drawString("Medir agua hirviendo (100 C)", posx, posy,2);
+            break;
+        
+        default:
+            break;
+        }
+
         color_marco = TFT_GREEN;
-        break;
-    
-    default:
-        modo = Disp_MEDICION;
         break;
     }
     
