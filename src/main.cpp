@@ -4,12 +4,13 @@
 #include "Boton.hpp"
 
 #define PIN_ADC A0
+#define OFFSET_ADC 29 // Calculado empiricamente
 
 #define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
 
-#define V_INS_MIN_CUENTAS 37   // [cuentas] = 30  mV
-#define V_INS_MAX_CUENTAS 3970 // [cuentas] = 3.2 V
+#define V_INS_MIN_CUENTAS 52   // [cuentas] = 40  mV
+#define V_INS_MAX_CUENTAS 3962 // [cuentas] = 3 V
 
 
 float getTemperatura(int cuentas);
@@ -32,6 +33,9 @@ enum {
 
 void setup() {
 
+    // Debug
+    Serial.begin();
+
 
     // Para usar con bateria
     pinMode(15, OUTPUT);
@@ -46,6 +50,7 @@ void setup() {
     // Canal analógico
     pinMode(PIN_ADC, INPUT);
     analogReadResolution(12);
+    analogSetAttenuation(ADC_11db); // Vref = 3100 mV
 
     // Botones
     botonUnidad.init();
@@ -75,7 +80,7 @@ void loop() {
             
             ult_conversion_ms = millis();
             
-            cuentas = analogRead(PIN_ADC);
+            cuentas = analogRead(PIN_ADC) + OFFSET_ADC;
             
             Display.setTemp(getTemperatura(cuentas));
         }
@@ -100,7 +105,8 @@ void loop() {
     case CALIBRACION:
 
         float pos_aguja;
-        cuentas = analogRead(PIN_ADC);
+        cuentas = analogRead(PIN_ADC) + OFFSET_ADC;
+        Serial.println(cuentas);
         
         switch (calib_submodo) {
         case CALIB_POTE:
@@ -149,12 +155,13 @@ float getTemperatura(int cuentas) {
             Se usaron los sig valores
 
             Vexc = 5V
+            Vref = 3.1 V
 
             Valores para V salida de amplificador operacional /
             entrada del ADC
 
-            max = 3.2 V
-            min = 30  mV
+            max = 3 V
+            min = 40  mV
 
             Para trabajar en la zona lineal de los AO
 
@@ -162,8 +169,8 @@ float getTemperatura(int cuentas) {
             Deben cambiar si cambia alguno de los parámetros del circuito
         */
 
-        double Ka = 2.051838252064429e-05;
-        double Kc = 0.499236156577981;
+        double Ka = 2.064231623980052e-05;
+        double Kc = 0.498909286645136;
         double alplha = 0.385; // [Ohms/C°]
 
     double temp_float = ( -100.0 / alplha ) * ( ( 1 - 2*Ka*cuentas - 2*Kc ) / ( 1 - Ka*cuentas - Kc) ); 
