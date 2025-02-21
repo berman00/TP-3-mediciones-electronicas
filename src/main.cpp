@@ -4,7 +4,6 @@
 #include "Boton.hpp"
 
 #define PIN_ADC A0
-#define OFFSET_ADC 29 // Calculado empiricamente
 
 #define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
@@ -14,6 +13,7 @@
 
 
 float getTemperatura(int cuentas);
+int getCuentasRollingAvg();
 
 uint32_t ult_conversion_ms;
 bool bandera_salida_calib;
@@ -66,7 +66,8 @@ void setup() {
 
 void loop() {
 
-    int cuentas;
+    // Muestreo
+    int cuentas = getCuentasRollingAvg();
 
     switch (modo) {
 
@@ -75,12 +76,10 @@ void loop() {
         if(botonUnidad.fuePresionado()){
             Display.toggleUnidad();
         }       
-        // Muestreo
+        // Actualizar temp;
         if(millis() - ult_conversion_ms > T_MUESTREO) {
             
             ult_conversion_ms = millis();
-            
-            cuentas = analogRead(PIN_ADC) + OFFSET_ADC;
             
             Display.setTemp(getTemperatura(cuentas));
         }
@@ -105,7 +104,6 @@ void loop() {
     case CALIBRACION:
 
         float pos_aguja;
-        cuentas = analogRead(PIN_ADC) + OFFSET_ADC;
         Serial.println(cuentas);
         
         switch (calib_submodo) {
@@ -179,4 +177,26 @@ float getTemperatura(int cuentas) {
     int16_t temp_en_2000_cuentas = 20 * temp_float; // Redondea para abajo
     
     return (float) (temp_en_2000_cuentas / 20.0);
+}
+
+int getCuentasRollingAvg(){
+
+    // Hace un promedio de las ultimas 10 mediciones
+
+    static int ultimas_mediciones[10]; // Promedio de 10 ultimas cuentas
+    static int ind_act;
+
+    int nueva_medicion = analogRead(PIN_ADC);
+
+    ultimas_mediciones[ind_act] = nueva_medicion;
+    ind_act++;
+    if (ind_act >= 10) ind_act = 0; // Buffer circular
+
+    int32_t suma = 0;
+    for (int i = 0; i < 10; i++) {
+        suma += ultimas_mediciones[i];
+    }
+
+    return suma / 10;
+
 }
