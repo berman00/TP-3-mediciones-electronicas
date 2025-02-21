@@ -4,7 +4,7 @@
 #include "Boton.hpp"
 
 #define PIN_ADC A0
-#define OFFSET_ADC 0 // Calculado empiricamente
+#define OFFSET_ADC 29 // Calculado empiricamente
 
 #define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
@@ -154,8 +154,6 @@ float getTemperatura(int cuentas) {
         /*
             Se usaron los sig valores
 
-            R = 1000 Ohms
-
             Vexc = 5V
             Vref = 3.1 V
 
@@ -171,18 +169,14 @@ float getTemperatura(int cuentas) {
             Deben cambiar si cambia alguno de los parámetros del circuito
         */
 
-    constexpr double Ka = 7.862326702906414e-06;
-    constexpr double Kb = 1100;
-    constexpr double Kc = 0.090493655711047;
-    constexpr double alpha = 0.385; // [Ohms/C°]
+        double Ka = 2.064231623980052e-05;
+        double Kc = 0.498909286645136;
+        double alplha = 0.385; // [Ohms/C°]
 
-    double num = Ka*Kb*cuentas + Kb*Kc - 100;
-    double den = alpha*(1 - Ka*cuentas - Kc);
-
-    double temp = den/num; 
+    double temp_float = ( -100.0 / alplha ) * ( ( 1 - 2*Ka*cuentas - 2*Kc ) / ( 1 - Ka*cuentas - Kc) ); 
 
     // limitamos los valores a resoluciones de 0.05
-    int16_t temp_en_2000_cuentas = 20 * temp; // Redondea para abajo
+    int16_t temp_en_2000_cuentas = 20 * temp_float; // Redondea para abajo
     
     return (float) (temp_en_2000_cuentas / 20.0);
 }
