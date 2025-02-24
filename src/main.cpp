@@ -3,7 +3,7 @@
 #include "DisplayTemp.hpp"
 #include "Boton.hpp"
 
-#define PIN_ADC A0
+#define PIN_ADC A1
 
 #define T_MUESTREO 500 // ms
 #define T_MODO_CALIB 1000 //ms
@@ -148,9 +148,12 @@ void loop() {
 
 
 float getTemperatura(int cuentas) {
+    
 
         /*
             Se usaron los sig valores
+
+            R = 3920 Ohms
 
             Vexc = 5V
             Vref = 3.1 V
@@ -165,18 +168,16 @@ float getTemperatura(int cuentas) {
 
             Valores calculados con MATLAB
             Deben cambiar si cambia alguno de los parámetros del circuito
+
+            Como la relacion entre cuentas y temp es aprox lineal, se uso una ecuacion lineal
         */
 
-        double Ka = 2.064231623980052e-05;
-        double Kc = 0.498909286645136;
-        double alplha = 0.385; // [Ohms/C°]
-
-    double temp_float = ( -100.0 / alplha ) * ( ( 1 - 2*Ka*cuentas - 2*Kc ) / ( 1 - Ka*cuentas - Kc) ); 
-
-    // limitamos los valores a resoluciones de 0.05
-    int16_t temp_en_2000_cuentas = 20 * temp_float; // Redondea para abajo
+        double temp = ((double)(cuentas - V_INS_MIN_CUENTAS)/(double)V_INS_MAX_CUENTAS) * 100.0; // [grados C]        
     
-    return (float) (temp_en_2000_cuentas / 20.0);
+        // limitamos los valores a resoluciones de 0.05
+        int16_t temp_en_2000_cuentas = 20 * temp; // Redondea para abajo
+        
+        return (float) (temp_en_2000_cuentas / 20.0);
 }
 
 int getCuentasRollingAvg(){
