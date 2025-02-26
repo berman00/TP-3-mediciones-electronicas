@@ -12,6 +12,19 @@
 #define V_INS_MAX_CUENTAS 3962 // [cuentas] = 3 V
 
 
+// CLI
+#include <CmdParser.hpp>
+#include <CmdBuffer.hpp>
+#include <CmdCallback.hpp>
+
+CmdParser cmdParser;
+CmdBuffer<32> myBuffer;
+CmdCallback<1> cmdCallback;
+
+void setCuentasAdc(CmdParser *parser);
+uint16_t cuentas_adc_manual;
+
+
 float getTemperatura(int cuentas);
 float redondearTemp(float temp_raw);
 int getCuentasRollingAvg();
@@ -34,8 +47,13 @@ enum {
 
 void setup() {
 
-    // Debug
-    Serial.begin();
+    // CLI
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("Serial listo");
+
+    cmdCallback.addCmd(PSTR("CUENTAS"), &setCuentasAdc);
+    myBuffer.setEcho(true);
 
 
     // Para usar con bateria
@@ -43,8 +61,6 @@ void setup() {
     digitalWrite(15, HIGH);
     
     Display.init();
-    Serial.begin(115200);
-
     Display.setTemp(0.0f);
     Display.updateDisplay();
 
@@ -66,6 +82,9 @@ void setup() {
 }
 
 void loop() {
+
+    // CLI
+    cmdCallback.updateCmdProcessing(&cmdParser, &myBuffer, &Serial);
 
     // Muestreo
     int cuentas = getCuentasRollingAvg();
@@ -173,12 +192,12 @@ float getTemperatura(int cuentas) {
         };
         const double y[tam] {
             0.0,
-            10.0,
-            20.0,
+            19.0,
+            21.0,
             30.0,
             40.0,
             50.0,
-            60.0,
+            65.0,
             70.0,
             80.0,
             90.0,
@@ -186,22 +205,23 @@ float getTemperatura(int cuentas) {
         };
     } puntos;
 
-
     // Edge case cuentas menores q primer punto
     if (cuentas < puntos.x[0]) {
+
         return redondearTemp(puntos.y[0]);
     }
 
     // Edge case cuentas mayores que ultimo punto
-    if (cuentas >= puntos.y[tam]) {
-        return redondearTemp(puntos.y[tam]);
+    if (cuentas >= puntos.x[tam-1]) {
+
+        return redondearTemp(puntos.y[tam-1]);
     }
 
     for (int i = 0; i < tam - 1; i++) {
 
         if (cuentas >= puntos.x[i] && cuentas < puntos.x[i+1]) {
 
-            double a = (puntos.y[i+1] - puntos.y[i]) / (puntos.x[i+1] - puntos.x[i]);
+            double a = (puntos.y[i+1] - puntos.y[i]) / (double)(puntos.x[i+1] - puntos.x[i]);
             double b = puntos.y[i] - a * puntos.x[i];
 
             return redondearTemp(a*(double)cuentas+b);
@@ -226,7 +246,7 @@ int getCuentasRollingAvg(){
     static int ultimas_mediciones[10]; // Promedio de 10 ultimas cuentas
     static int ind_act;
 
-    int nueva_medicion = analogRead(PIN_ADC);
+    int nueva_medicion = cuentas_adc_manual;//analogRead(PIN_ADC);
 
     ultimas_mediciones[ind_act] = nueva_medicion;
     ind_act++;
@@ -239,4 +259,15 @@ int getCuentasRollingAvg(){
 
     return suma / 10;
 
+}
+
+void setCuentasAdc(CmdParser *parser) {
+
+    if (parser->getParamCount() != 2) {
+        Serial.println("Especificar el valor de cuentas ADC");
+        return;
+    }
+
+    String param_string = String(parser->getCmdParam(1));
+    cuentas_adc_manual = param_string.toInt();
 }
