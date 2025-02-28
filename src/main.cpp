@@ -184,20 +184,22 @@ int getCuentasRollingAvg(){
 
     // Hace un promedio de las ultimas 10 mediciones
 
-    static int ultimas_mediciones[10]; // Promedio de 10 ultimas cuentas
+    constexpr int cant_medi = 30;
+
+    static int ultimas_mediciones[cant_medi]; // Promedio de 10 ultimas cuentas
     static int ind_act;
 
     int nueva_medicion = analogRead(PIN_ADC);
 
     ultimas_mediciones[ind_act] = nueva_medicion;
     ind_act++;
-    if (ind_act >= 10) ind_act = 0; // Buffer circular
+    if (ind_act >= cant_medi) ind_act = 0; // Buffer circular
 
     int32_t suma = 0;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < cant_medi; i++) {
         suma += ultimas_mediciones[i];
     }
 
-    return suma / 10;
+    return suma / cant_medi;
 
 }
