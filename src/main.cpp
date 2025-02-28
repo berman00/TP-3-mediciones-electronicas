@@ -179,7 +179,7 @@ float getTemperatura(int cuentas) {
     static constexpr struct {
         const int x[tam] = {
             V_INS_MIN_CUENTAS,
-            478,  // 3.4
+            199,  // 3.9
             575,  // 12.1
             742,   // 19.3
             1216, // 31.8
@@ -192,7 +192,7 @@ float getTemperatura(int cuentas) {
         };
         const double y[tam] {
             0.0,
-            3.4,
+            3.9,
             12.1,
             19.3,
             31.8,
