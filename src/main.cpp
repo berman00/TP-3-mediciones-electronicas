@@ -178,29 +178,29 @@ float getTemperatura(int cuentas) {
     
     static constexpr struct {
         const int x[tam] = {
-            0,
-            400,
-            800,
-            1200,
-            1600,
-            2000,
-            2400,
-            2800,
-            3200,
-            3600,
-            4000,
+            V_INS_MIN_CUENTAS,
+            478,  // 3.4
+            575,  // 12.1
+            742,   // 19.3
+            1216, // 31.8
+            1571, // 41.1
+            1941, // 49.8
+            2255, // 60,3
+            2682, // 72.2
+            3520, // 94.3
+            V_INS_MAX_CUENTAS,
         };
         const double y[tam] {
             0.0,
-            19.0,
-            21.0,
-            30.0,
-            40.0,
-            50.0,
-            65.0,
-            70.0,
-            80.0,
-            90.0,
+            3.4,
+            12.1,
+            19.3,
+            31.8,
+            41.1,
+            49.8,
+            60.3,
+            72.2,
+            94.3,
             100.0,
         };
     } puntos;
@@ -246,7 +246,7 @@ int getCuentasRollingAvg(){
     static int ultimas_mediciones[10]; // Promedio de 10 ultimas cuentas
     static int ind_act;
 
-    int nueva_medicion = cuentas_adc_manual;//analogRead(PIN_ADC);
+    int nueva_medicion = analogRead(PIN_ADC);
 
     ultimas_mediciones[ind_act] = nueva_medicion;
     ind_act++;
