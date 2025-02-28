@@ -5,7 +5,7 @@
 
 #define PIN_ADC A1
 
-#define T_MUESTREO 500 // ms
+#define T_MUESTREO 1500 // ms
 #define T_MODO_CALIB 1000 //ms
 
 #define V_INS_MIN_CUENTAS 52   // [cuentas] = 40  mV
@@ -174,32 +174,38 @@ float getTemperatura(int cuentas) {
     * Valores calculados por interpolación lineal
     */
 
-    constexpr int tam = 11;
+    constexpr int tam = 14;
     
     static constexpr struct {
         const int x[tam] = {
             V_INS_MIN_CUENTAS,
-            199,  // 3.9
+            265,  // 3.8
             575,  // 12.1
-            742,   // 19.3
-            1216, // 31.8
-            1571, // 41.1
+            846,  // 20.2
+            952,  // 22.3
+            1172, // 28.4
+            1462, // 37.0
+            1632, // 40.2
             1941, // 49.8
             2255, // 60,3
             2682, // 72.2
+            3382, // 91.8
             3520, // 94.3
             V_INS_MAX_CUENTAS,
         };
         const double y[tam] {
             0.0,
-            3.9,
+            3.8,
             12.1,
-            19.3,
-            31.8,
-            41.1,
+            20.2,
+            22.3,
+            28.4,
+            37.0,
+            40.2,
             49.8,
             60.3,
             72.2,
+            91.8,
             94.3,
             100.0,
         };
@@ -243,21 +249,23 @@ int getCuentasRollingAvg(){
 
     // Hace un promedio de las ultimas 10 mediciones
 
-    static int ultimas_mediciones[10]; // Promedio de 10 ultimas cuentas
+    constexpr int cant_medi = 30;
+
+    static int ultimas_mediciones[cant_medi]; // Promedio de 10 ultimas cuentas
     static int ind_act;
 
     int nueva_medicion = analogRead(PIN_ADC);
 
     ultimas_mediciones[ind_act] = nueva_medicion;
     ind_act++;
-    if (ind_act >= 10) ind_act = 0; // Buffer circular
+    if (ind_act >= cant_medi) ind_act = 0; // Buffer circular
 
     int32_t suma = 0;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < cant_medi; i++) {
         suma += ultimas_mediciones[i];
     }
 
-    return suma / 10;
+    return suma / cant_medi;
 
 }
 
