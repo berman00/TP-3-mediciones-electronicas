@@ -9,7 +9,7 @@
 #define T_MODO_CALIB 1000 //ms
 
 #define V_INS_MIN_CUENTAS 52   // [cuentas] = 40  mV
-#define V_INS_MAX_CUENTAS 3962 // [cuentas] = 3 V
+#define V_INS_MAX_CUENTAS 4095 // [cuentas] = 3 V
 
 
 // CLI
@@ -174,39 +174,33 @@ float getTemperatura(int cuentas) {
     * Valores calculados por interpolación lineal
     */
 
-    constexpr int tam = 14;
+    constexpr int tam = 11;
     
     static constexpr struct {
         const int x[tam] = {
-            V_INS_MIN_CUENTAS,
-            265,  // 3.8
-            575,  // 12.1
-            846,  // 20.2
-            952,  // 22.3
-            1172, // 28.4
-            1462, // 37.0
-            1632, // 40.2
-            1941, // 49.8
-            2255, // 60,3
-            2682, // 72.2
-            3382, // 91.8
-            3520, // 94.3
+            0,
+            300,  // 3.8 /
+            482,  // 6.4 /
+            857,  // 17.9 /
+            1068, // 23.2 /
+            1763, // 42.9 /
+            2074, // 50.3 /
+            2472, // 61.2 
+            3021, // 75.1
+            3581, // 88.8
             V_INS_MAX_CUENTAS,
         };
         const double y[tam] {
             0.0,
             3.8,
-            12.1,
-            20.2,
-            22.3,
-            28.4,
-            37.0,
-            40.2,
-            49.8,
-            60.3,
-            72.2,
-            91.8,
-            94.3,
+            6.4,
+            17.9,
+            23.2,
+            42.9,
+            50.3,
+            61.2,
+            75.1,
+            88.8,
             100.0,
         };
     } puntos;
