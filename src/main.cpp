@@ -5,14 +5,28 @@
 
 #define PIN_ADC A1
 
-#define T_MUESTREO 500 // ms
+#define T_MUESTREO 1500 // ms
 #define T_MODO_CALIB 1000 //ms
 
 #define V_INS_MIN_CUENTAS 52   // [cuentas] = 40  mV
-#define V_INS_MAX_CUENTAS 3962 // [cuentas] = 3 V
+#define V_INS_MAX_CUENTAS 4095 // [cuentas] = 3 V
+
+
+// CLI
+#include <CmdParser.hpp>
+#include <CmdBuffer.hpp>
+#include <CmdCallback.hpp>
+
+CmdParser cmdParser;
+CmdBuffer<32> myBuffer;
+CmdCallback<1> cmdCallback;
+
+void setCuentasAdc(CmdParser *parser);
+uint16_t cuentas_adc_manual;
 
 
 float getTemperatura(int cuentas);
+float redondearTemp(float temp_raw);
 int getCuentasRollingAvg();
 
 uint32_t ult_conversion_ms;
@@ -33,8 +47,13 @@ enum {
 
 void setup() {
 
-    // Debug
-    Serial.begin();
+    // CLI
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("Serial listo");
+
+    cmdCallback.addCmd(PSTR("CUENTAS"), &setCuentasAdc);
+    myBuffer.setEcho(true);
 
 
     // Para usar con bateria
@@ -42,8 +61,6 @@ void setup() {
     digitalWrite(15, HIGH);
     
     Display.init();
-    Serial.begin(115200);
-
     Display.setTemp(0.0f);
     Display.updateDisplay();
 
@@ -65,6 +82,9 @@ void setup() {
 }
 
 void loop() {
+
+    // CLI
+    cmdCallback.updateCmdProcessing(&cmdParser, &myBuffer, &Serial);
 
     // Muestreo
     int cuentas = getCuentasRollingAvg();
@@ -150,34 +170,73 @@ void loop() {
 float getTemperatura(int cuentas) {
     
 
-        /*
-            Se usaron los sig valores
+    /* 
+    * Valores calculados por interpolación lineal
+    */
 
-            R = 3920 Ohms
-
-            Vexc = 5V
-            Vref = 3.1 V
-
-            Valores para V salida de amplificador operacional /
-            entrada del ADC
-
-            max = 3 V
-            min = 40  mV
-
-            Para trabajar en la zona lineal de los AO
-
-            Valores calculados con MATLAB
-            Deben cambiar si cambia alguno de los parámetros del circuito
-
-            Como la relacion entre cuentas y temp es aprox lineal, se uso una ecuacion lineal
-        */
-
-        double temp = ((double)(cuentas - V_INS_MIN_CUENTAS)/(double)V_INS_MAX_CUENTAS) * 100.0; // [grados C]        
+    constexpr int tam = 11;
     
-        // limitamos los valores a resoluciones de 0.05
-        int16_t temp_en_2000_cuentas = 20 * temp; // Redondea para abajo
-        
-        return (float) (temp_en_2000_cuentas / 20.0);
+    static constexpr struct {
+        const int x[tam] = {
+            0,
+            300,  // 3.8 /
+            482,  // 6.4 /
+            857,  // 17.9 /
+            1068, // 23.2 /
+            1763, // 42.9 /
+            2074, // 50.3 /
+            2472, // 61.2 
+            3021, // 75.1
+            3581, // 88.8
+            V_INS_MAX_CUENTAS,
+        };
+        const double y[tam] {
+            0.0,
+            3.8,
+            6.4,
+            17.9,
+            23.2,
+            42.9,
+            50.3,
+            61.2,
+            75.1,
+            88.8,
+            100.0,
+        };
+    } puntos;
+
+    // Edge case cuentas menores q primer punto
+    if (cuentas < puntos.x[0]) {
+
+        return redondearTemp(puntos.y[0]);
+    }
+
+    // Edge case cuentas mayores que ultimo punto
+    if (cuentas >= puntos.x[tam-1]) {
+
+        return redondearTemp(puntos.y[tam-1]);
+    }
+
+    for (int i = 0; i < tam - 1; i++) {
+
+        if (cuentas >= puntos.x[i] && cuentas < puntos.x[i+1]) {
+
+            double a = (puntos.y[i+1] - puntos.y[i]) / (double)(puntos.x[i+1] - puntos.x[i]);
+            double b = puntos.y[i] - a * puntos.x[i];
+
+            return redondearTemp(a*(double)cuentas+b);
+        }
+    }
+
+    return -1; // Algo fallo. Puede ser que los puntos no estan bien ordenados
+}
+
+float redondearTemp(float temp_raw) {
+
+    // limitamos los valores a resoluciones de 0.05
+    int16_t temp_en_2000_cuentas = 20 * temp_raw; // Redondea para abajo
+
+    return (float) (temp_en_2000_cuentas / 20.0);
 }
 
 int getCuentasRollingAvg(){
@@ -202,4 +261,15 @@ int getCuentasRollingAvg(){
 
     return suma / cant_medi;
 
+}
+
+void setCuentasAdc(CmdParser *parser) {
+
+    if (parser->getParamCount() != 2) {
+        Serial.println("Especificar el valor de cuentas ADC");
+        return;
+    }
+
+    String param_string = String(parser->getCmdParam(1));
+    cuentas_adc_manual = param_string.toInt();
 }
